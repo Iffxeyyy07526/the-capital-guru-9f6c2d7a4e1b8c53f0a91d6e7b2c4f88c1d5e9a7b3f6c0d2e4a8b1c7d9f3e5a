@@ -42,10 +42,10 @@ export default function LoadingScreen() {
             className="relative w-32 h-32"
           >
             <Image 
-              src="/logo.png" 
+              src="https://i.ibb.co/Y7wKvYJ5/122151.png" 
               alt="The Capital Guru" 
               fill 
-              className="object-contain"
+              className="object-contain drop-shadow-[0_0_30px_rgba(212,175,55,0.4)]"
               priority
             />
           </motion.div>

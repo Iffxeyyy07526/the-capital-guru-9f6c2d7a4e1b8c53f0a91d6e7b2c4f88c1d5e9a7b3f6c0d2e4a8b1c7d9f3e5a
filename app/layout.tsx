@@ -23,15 +23,17 @@ const playfair = Playfair_Display({
   style: ['italic', 'normal'],
 });
 
+const LOGO_URL = 'https://i.ibb.co/Y7wKvYJ5/122151.png';
+
 export const metadata: Metadata = {
   metadataBase: new URL('https://thecapitalguru.net'),
   title: "The Capital Guru | Institutional-Grade Trading Signals India",
   description: "Premium NSE/BSE F&O trading signals with 80%+ accuracy. Trusted by 4,800+ elite members. Real-time Telegram alerts, expert risk management.",
   icons: {
     icon: [
-      { url: '/logo.png' },
+      { url: LOGO_URL },
     ],
-    apple: '/logo.png',
+    apple: LOGO_URL,
   },
   openGraph: {
     title: "The Capital Guru | Institutional-Grade Trading Signals India",
@@ -40,7 +42,7 @@ export const metadata: Metadata = {
     siteName: 'The Capital Guru',
     images: [
       {
-        url: '/logo.png',
+        url: LOGO_URL,
         width: 1200,
         height: 630,
         alt: 'The Capital Guru - Institutional Grade Trading Signals',
@@ -53,7 +55,7 @@ export const metadata: Metadata = {
     card: 'summary_large_image',
     title: "The Capital Guru | Institutional-Grade Trading Signals India",
     description: "Premium NSE/BSE F&O trading signals with 80%+ accuracy.",
-    images: ['/logo.png'],
+    images: [LOGO_URL],
   }
 };
 
