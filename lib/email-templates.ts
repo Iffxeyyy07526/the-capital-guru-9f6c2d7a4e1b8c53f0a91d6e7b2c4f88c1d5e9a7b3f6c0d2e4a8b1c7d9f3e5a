@@ -21,8 +21,9 @@ export function getBaseEmailTemplate(content: string, name?: string) {
       </head>
       <body>
         <div class="container">
-          <div class="header">
-            <img src="${baseUrl}/email-header.png" width="600" height="120" alt="The Capital Guru" />
+          <div class="header" style="background-color: #0c0c0c; padding: 40px 0;">
+            <img src="https://i.ibb.co/Y7wKvYJ5/122151.png" width="80" height="80" alt="The Capital Guru" style="margin: 0 auto; display: block;" />
+            <h1 style="color: #D4AF37; font-size: 20px; font-weight: 900; letter-spacing: 2px; margin-top: 15px; text-transform: uppercase;">The Capital Guru</h1>
           </div>
           <div class="content">
             ${name ? `<p style="font-size: 18px; color: #ffffff;">Hello ${name},</p>` : ''}

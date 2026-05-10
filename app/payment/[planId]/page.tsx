@@ -1,6 +1,7 @@
 'use client';
 
 import { use, useState, useEffect } from 'react';
+import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useForm } from 'react-hook-form';
@@ -258,9 +259,14 @@ export default function PaymentPage({ params }: { params: Promise<{ planId: stri
                 Scan to Pay
               </h2>
               
-              <div className="bg-white p-4 rounded-xl mb-8 w-full max-w-[280px] mx-auto flex items-center justify-center shadow-2xl relative overflow-hidden">
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img src="https://i.ibb.co/spXv708j/IMG-20260507-202558.png" alt="UPI QR Code" className="w-full h-auto object-contain rounded-lg" />
+              <div className="bg-white p-4 rounded-xl mb-8 w-full max-w-[280px] mx-auto flex items-center justify-center shadow-2xl relative overflow-hidden aspect-square">
+                <Image 
+                  src="https://i.ibb.co/spXv708j/IMG-20260507-202558.png" 
+                  alt="UPI QR Code" 
+                  fill
+                  className="object-contain p-2"
+                  referrerPolicy="no-referrer"
+                />
               </div>
 
               <div className="space-y-4 text-sm">
