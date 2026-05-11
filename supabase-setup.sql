@@ -63,6 +63,9 @@ CREATE TABLE IF NOT EXISTS public.payment_requests (
     amount NUMERIC NOT NULL,
     utr_number TEXT UNIQUE NOT NULL,
     screenshot_url TEXT NOT NULL,
+    phone TEXT,
+    whatsapp_number TEXT,
+    telegram_id TEXT,
     status request_status DEFAULT 'pending',
     admin_feedback TEXT,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
@@ -184,7 +187,7 @@ CREATE POLICY "Users can view their own payment requests" ON public.payment_requ
     FOR SELECT USING (auth.uid() = user_id);
 
 CREATE POLICY "Users can insert their own payment requests" ON public.payment_requests
-    FOR INSERT WITH CHECK (auth.uid() = user_id);
+    FOR INSERT WITH CHECK (auth.uid() = user_id AND auth.email_confirmed());
 
 -- 4. Subscriptions Policies
 CREATE POLICY "Users can view their own subscriptions" ON public.subscriptions
@@ -202,26 +205,47 @@ CREATE POLICY "Users can update their own notifications" ON public.notifications
     FOR UPDATE USING (auth.uid() = user_id);
 
 -- ========================================================
--- ADMIN POLICIES (Example using a specific admin role)
+-- ADMIN POLICIES
 -- ========================================================
 
-CREATE POLICY "Admins can do anything" ON public.profiles
-    USING (EXISTS (SELECT 1 FROM public.profiles WHERE id = auth.uid() AND role = 'admin'));
+CREATE POLICY "Admins can view all profiles" ON public.profiles
+    FOR SELECT USING (EXISTS (SELECT 1 FROM public.profiles WHERE id = auth.uid() AND role = 'admin'));
 
-CREATE POLICY "Admins can manage payment requests" ON public.payment_requests
-    USING (EXISTS (SELECT 1 FROM public.profiles WHERE id = auth.uid() AND role = 'admin'));
+CREATE POLICY "Admins can view all payment requests" ON public.payment_requests
+    FOR ALL USING (EXISTS (SELECT 1 FROM public.profiles WHERE id = auth.uid() AND role = 'admin'));
+
+CREATE POLICY "Admins can view all subscriptions" ON public.subscriptions
+    FOR ALL USING (EXISTS (SELECT 1 FROM public.profiles WHERE id = auth.uid() AND role = 'admin'));
 
 -- ========================================================
--- STORAGE POLICIES
+-- STORAGE BUCKETS & POLICIES
 -- ========================================================
 
--- (Note: These are conceptual, usually applied to 'storage.objects' table)
--- 1. payment-screenshots bucket
--- - authenticated users can upload to their own folder: 'payment-screenshots/{{auth.uid()}}/*'
--- - admins can read all
--- 2. avatars bucket
--- - authenticated users can upload to their own folder: 'avatars/{{auth.uid()}}/*'
--- - public read access
+-- Create buckets
+INSERT INTO storage.buckets (id, name, public) VALUES ('payment-screenshots', 'payment-screenshots', true) ON CONFLICT (id) DO NOTHING;
+INSERT INTO storage.buckets (id, name, public) VALUES ('avatars', 'avatars', true) ON CONFLICT (id) DO NOTHING;
+
+-- Bucket: payment-screenshots
+CREATE POLICY "Authenticated users can upload payment screenshots"
+ON storage.objects FOR INSERT TO authenticated
+WITH CHECK (
+    bucket_id = 'payment-screenshots' AND
+    (storage.foldername(name))[1] = auth.uid()::text
+);
+
+CREATE POLICY "Users can view their own screenshots"
+ON storage.objects FOR SELECT TO authenticated
+USING (
+    bucket_id = 'payment-screenshots' AND
+    (storage.foldername(name))[1] = auth.uid()::text
+);
+
+CREATE POLICY "Admins can view all screenshots"
+ON storage.objects FOR SELECT TO authenticated
+USING (
+    bucket_id = 'payment-screenshots' AND
+    EXISTS (SELECT 1 FROM public.profiles WHERE id = auth.uid() AND role = 'admin')
+);
 
 -- ========================================================
 -- INITIAL DATA
@@ -231,4 +255,10 @@ INSERT INTO public.plans (id, name, description, price, duration_days, features)
 VALUES 
 ('basic', 'Standard Access', 'Perfect for individual traders starting out.', 4999, 30, '["Telegram Signals", "Standard Support"]'),
 ('pro', 'Professional Elite', 'Institutional grade signals with advanced depth.', 9999, 30, '["Priority Telegram Signals", "Pre-Market Analysis", "Risk Management Tools"]'),
-('yearly', 'Institutional Yearly', 'Full year standard access with massive savings.', 39999, 365, '["All Pro Features", "1-on-1 Strategy Calls", "Yearly Savings"]');
+('yearly', 'Institutional Yearly', 'Full year standard access with massive savings.', 39999, 365, '["All Pro Features", "1-on-1 Strategy Calls", "Yearly Savings"]')
+ON CONFLICT (id) DO UPDATE SET
+    name = EXCLUDED.name,
+    description = EXCLUDED.description,
+    price = EXCLUDED.price,
+    duration_days = EXCLUDED.duration_days,
+    features = EXCLUDED.features;

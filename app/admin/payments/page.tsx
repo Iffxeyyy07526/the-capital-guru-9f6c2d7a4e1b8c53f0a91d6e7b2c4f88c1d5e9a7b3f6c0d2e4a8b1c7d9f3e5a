@@ -37,7 +37,17 @@ export default function AdminPaymentsPage() {
   }, [supabase, filterStatus]);
 
   useEffect(() => {
-    fetchRequests();
+    let isMounted = true;
+    
+    const loadData = async () => {
+      await fetchRequests();
+    };
+
+    loadData();
+    
+    return () => {
+      isMounted = false;
+    };
   }, [fetchRequests]);
 
   const handleApprove = async (id: string) => {
