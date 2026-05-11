@@ -12,6 +12,7 @@ const navLinks = [
   { name: 'Pricing', href: '/pricing' },
   { name: 'Dashboard', href: '/dashboard' },
   { name: 'Blogs', href: '/blogs' },
+  { name: 'Contact', href: '/contact' },
 ];
 
 export function Navbar() {

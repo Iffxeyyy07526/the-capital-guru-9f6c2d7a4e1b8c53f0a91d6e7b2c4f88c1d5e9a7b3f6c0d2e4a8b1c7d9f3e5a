@@ -89,13 +89,13 @@ function DashboardContent() {
   }
 
   const status = latestPayment?.status || 'none'; // 'pending' | 'approved' | 'rejected' | 'none'
-  const planName = latestPayment?.plan === 'monthly' ? 'Pro Monthly' : latestPayment?.plan === 'six-monthly' ? 'Elite Bi-Annual' : latestPayment?.plan === 'yearly' ? 'Mastery Annual' : 'No Active Plan';
+  const planName = latestPayment?.plan_id === 'monthly' ? 'Pro Monthly' : latestPayment?.plan_id === 'six-monthly' ? 'Elite Bi-Annual' : latestPayment?.plan_id === 'yearly' ? 'Mastery Annual' : 'No Active Plan';
 
-  const calculateExpiry = (createdAt: string, plan: string) => {
+  const calculateExpiry = (createdAt: string, planId: string) => {
     const date = new Date(createdAt);
-    if (plan === 'monthly') date.setMonth(date.getMonth() + 1);
-    else if (plan === 'six-monthly') date.setMonth(date.getMonth() + 6);
-    else if (plan === 'yearly') date.setFullYear(date.getFullYear() + 1);
+    if (planId === 'monthly') date.setMonth(date.getMonth() + 1);
+    else if (planId === 'six-monthly') date.setMonth(date.getMonth() + 6);
+    else if (planId === 'yearly') date.setFullYear(date.getFullYear() + 1);
     return date.toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' });
   };
 
@@ -323,7 +323,7 @@ function DashboardContent() {
               <div className="relative pl-6 before:absolute before:left-0 before:top-1 before:w-[2px] before:h-8 before:bg-white/10">
                 <span className="text-[9px] uppercase tracking-widest text-white/30 block mb-2 font-black">Authorization Closes</span>
                 <span className="text-xs font-mono font-medium text-white/80">
-                  {status === 'approved' ? calculateExpiry(latestPayment.created_at, latestPayment.plan) : 'NONE'}
+                  {status === 'approved' ? calculateExpiry(latestPayment.created_at, latestPayment.plan_id) : 'NONE'}
                 </span>
               </div>
             </div>

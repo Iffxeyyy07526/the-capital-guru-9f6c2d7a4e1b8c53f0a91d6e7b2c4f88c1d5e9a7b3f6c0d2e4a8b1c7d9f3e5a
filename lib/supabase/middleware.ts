@@ -29,42 +29,65 @@ export async function updateSession(request: NextRequest) {
     }
   );
 
+  // Get user session
   const {
     data: { user },
   } = await supabase.auth.getUser();
 
-  // Handle route protection
-  const isAuthPage = request.nextUrl.pathname === '/login' || request.nextUrl.pathname === '/register' || request.nextUrl.pathname === '/forgot-password';
-  const isProtectedPage = request.nextUrl.pathname.startsWith('/dashboard') || request.nextUrl.pathname.startsWith('/payment');
-  const isVerifyEmailPage = request.nextUrl.pathname === '/verify-email';
+  const url = request.nextUrl.clone();
+  const path = request.nextUrl.pathname;
 
+  // Define route groups
+  const isAuthPage = path.startsWith('/login') || path.startsWith('/register') || path.startsWith('/forgot-password');
+  const isVerifyEmailPage = path === '/verify-email';
+  const isDashboardPage = path.startsWith('/dashboard');
+  const isPaymentPage = path.startsWith('/payment');
+  const isAdminPage = path.startsWith('/admin');
+  
+  const isProtectedPage = isDashboardPage || isPaymentPage || isAdminPage || path.startsWith('/signals') || path.startsWith('/account');
+
+  // Case 1: Unauthenticated user trying to access protected page
   if (!user && isProtectedPage) {
-    const url = request.nextUrl.clone();
     url.pathname = '/login';
-    url.searchParams.set('redirectTo', request.nextUrl.pathname);
+    url.searchParams.set('redirectTo', path);
     return NextResponse.redirect(url);
   }
 
+  // Case 2: Authenticated user
   if (user) {
-    // Check if email is confirmed
     const isEmailConfirmed = !!user.email_confirmed_at;
 
-    if (!isEmailConfirmed && isProtectedPage) {
-      const url = request.nextUrl.clone();
+    // Case 2a: Email not confirmed but trying to access protected page (except verify-email)
+    if (!isEmailConfirmed && isProtectedPage && !isVerifyEmailPage) {
       url.pathname = '/verify-email';
+      url.searchParams.set('email', user.email || '');
       return NextResponse.redirect(url);
     }
 
+    // Case 2b: Email confirmed but visiting verify-email page
     if (isEmailConfirmed && isVerifyEmailPage) {
-      const url = request.nextUrl.clone();
       url.pathname = '/dashboard';
       return NextResponse.redirect(url);
     }
 
+    // Case 2c: Authenticated user visiting auth pages
     if (isAuthPage && isEmailConfirmed) {
-      const url = request.nextUrl.clone();
       url.pathname = '/dashboard';
       return NextResponse.redirect(url);
+    }
+
+    // Case 3: Admin page protection
+    if (isAdminPage) {
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('role')
+        .eq('id', user.id)
+        .single();
+      
+      if (!profile || profile.role !== 'admin') {
+        url.pathname = '/dashboard';
+        return NextResponse.redirect(url);
+      }
     }
   }
 

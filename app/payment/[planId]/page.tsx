@@ -65,7 +65,7 @@ export default function PaymentPage({ params }: { params: Promise<{ planId: stri
         .from('payment_requests')
         .select('*')
         .eq('user_id', user.id)
-        .eq('plan', resolvedParams.planId)
+        .eq('plan_id', resolvedParams.planId)
         .order('created_at', { ascending: false })
         .limit(1);
 
@@ -148,7 +148,7 @@ export default function PaymentPage({ params }: { params: Promise<{ planId: stri
         .from('payment_requests')
         .insert({
           user_id: user.id,
-          plan: plan.id,
+          plan_id: plan.id, // Changed from plan
           amount: plan.amount,
           utr_number: data.utrNumber,
           screenshot_url: screenshotUrl,
